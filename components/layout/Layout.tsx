@@ -17,7 +17,9 @@ export default function Layout({
     <>
       <HTMLHead title={title} description={description} />
       <Header />
-      {children}
+      <main className="bg-sky-50 dark:bg-black min-h-[calc(100vh-4rem-4px)] lg:min-h-[calc(100vh-5rem-4px)]">
+        {children}
+      </main>
     </>
   )
 }

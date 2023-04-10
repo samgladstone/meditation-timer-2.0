@@ -1,0 +1,28 @@
+.btn {
+  @apply text-xl border-2 px-5 py-2 rounded-xl;
+
+  &:hover {
+    @apply transition-colors duration-300;
+  }
+
+  &-primary {
+    @apply border-sky-800 bg-sky-50 text-sky-800;
+
+    &:hover,
+    &.active {
+      @apply bg-sky-800 text-white;
+    }
+  }
+}
+
+html.dark {
+  .btn {
+    &-primary {
+      @apply border-sky-200 bg-black text-sky-200;
+      &:hover,
+      &.active {
+        @apply text-sky-950 bg-sky-200;
+      }
+    }
+  }
+}

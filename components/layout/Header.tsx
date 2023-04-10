@@ -11,12 +11,16 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <header className="border-b-4 border-sky-900 dark:border-sky-200 bg-sky-50 dark:bg-black">
+    <header className="border-b-4 border-sky-900 dark:border-sky-200 bg-sky-50 dark:bg-black relative">
+      <a
+        href="#main"
+        className="absolute top-0 left-0 transform -translate-y-100"
+      ></a>
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 lg:px-8 h-[4rem] lg:h-[5rem]">
         <Link href="/" className="-m-1.5 p-1.5">
           <span className="sr-only">Meditation Timer</span>
           <img
-            className="h-8 lg:h-10 w-auto filter brightness-75 dark:filter-none"
+            className="h-8 lg:h-10 w-auto filter brightness-25 dark:filter-none"
             src={logo.src}
             alt=""
           />
@@ -65,7 +69,7 @@ export default function Header() {
                 <a href="#" className="-m-1.5 p-1.5">
                   <span className="sr-only">Meditation Timer</span>
                   <img
-                    className="h-8 w-auto filter brightness-75 dark:filter-none"
+                    className="h-8 w-auto filter brightness-25 dark:filter-none"
                     src={logo.src}
                     alt=""
                   />

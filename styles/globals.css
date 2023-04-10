@@ -1,11 +1,7 @@
+@import './base/_fonts.css';
+@import './base/_typography.css';
+@import './components/_buttons.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-html {
-  @apply text-sky-950;
-
-  &.dark {
-    @apply text-sky-200;
-  }
-}

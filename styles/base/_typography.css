@@ -1,0 +1,11 @@
+html {
+  @apply text-sky-950;
+
+  &.dark {
+    @apply text-sky-200;
+  }
+}
+
+body {
+  font-family: 'Mukta Malar', Arial, Helvetica, sans-serif;
+}
