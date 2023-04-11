@@ -8,7 +8,7 @@ export default function Document() {
       <body>
         <Main />
         <NextScript />
-        <Script strategy="beforeInteractive" src="/scripts/setDarkMode.js" />
+        <Script strategy="beforeInteractive" src="/scripts/set-dark-mode.js" />
       </body>
     </Html>
   )

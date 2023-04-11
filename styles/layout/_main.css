@@ -1,0 +1,13 @@
+html.dark {
+  main.home {
+    background-image: url(/night-sky.jpg);
+    background-size: cover;
+    background-position: bottom;
+  }
+}
+
+main.home {
+  background-image: url(/mountain-daytime.jpg);
+  background-size: cover;
+  background-position: bottom;
+}

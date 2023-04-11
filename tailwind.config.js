@@ -14,6 +14,11 @@ module.exports = {
     extend: {
       brightness: {
         25: '.25'
+      },
+      opacity: {
+        65: '0.65',
+        75: '0.75',
+        85: '0.85'
       }
     }
   },

@@ -1,6 +1,9 @@
 @import './base/_fonts.css';
 @import './base/_typography.css';
+
 @import './components/_buttons.css';
+
+@import './layout/_main.css';
 
 @tailwind base;
 @tailwind components;

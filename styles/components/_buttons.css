@@ -1,4 +1,4 @@
-.btn {
+button.btn {
   @apply text-xl border-2 px-5 py-2 rounded-xl;
 
   &:hover {
@@ -16,7 +16,7 @@
 }
 
 html.dark {
-  .btn {
+  button.btn {
     &-primary {
       @apply border-sky-200 bg-black text-sky-200;
       &:hover,

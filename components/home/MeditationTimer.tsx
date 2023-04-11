@@ -1,16 +1,26 @@
-import React, { Fragment, Reducer, useReducer } from 'react'
+import React, { Fragment, Reducer, useReducer, useRef } from 'react'
 import { Tab } from '@headlessui/react'
 import { TimerAction, TimerState } from './types/TimerTypes'
 import IntervalTimer from './IntervalTimer'
+import BellButtons from './BellButtons'
+import ControlButtons from './ControlButtons'
+import { Bells } from './Bells'
 
 type Props = {}
 
 function MeditationTimer({}: Props) {
+  const mainTimer = useRef(null)
+  const delayTimer = useRef(null)
+  const intervalTimer = useRef(null)
+
   const initialState = {
     duration: 900,
     delay: 10,
     interval: 300,
-    intervals: []
+    intervals: [],
+    bell: 0,
+    isRunning: false,
+    paused: false
   }
 
   function reducer(state: TimerState, action: TimerAction) {
@@ -29,8 +39,16 @@ function MeditationTimer({}: Props) {
       case 'removeInterval':
         return {
           ...state,
-          intervals: [...state.intervals.splice(action.value, 1)]
+          intervals: [
+            ...state.intervals.filter((_, index) => index !== action.value)
+          ]
         }
+      case 'setBell':
+        return { ...state, bell: action.value }
+      case 'setIsRunning':
+        return { ...state, isRunning: action.value }
+      case 'setPaused':
+        return { ...state, paused: action.value }
     }
   }
 
@@ -51,7 +69,6 @@ function MeditationTimer({}: Props) {
     let hours: number | string = Math.floor(value / 60 / 60)
     let minutes: number | string = Math.floor(value / 60 - hours * 60)
     let seconds: number | string = value - Math.floor(value / 60) * 60
-    console.log('hi', value)
 
     hours = '0' + hours
 
@@ -64,6 +81,40 @@ function MeditationTimer({}: Props) {
     return hours !== '00'
       ? hours + ':' + minutes + ':' + seconds
       : minutes + ':' + seconds
+  }
+
+  function playShortBell(index: number) {
+    Bells.forEach((_, i) => {
+      Bells[i].pause()
+      Bells[i].currentTime = 0
+    })
+    Bells[index].play()
+  }
+
+  function playBell(index: number) {
+    Bells[index + 3].play()
+  }
+
+  function start(): void {
+    dispatch({ type: 'setIsRunning', value: true })
+  }
+
+  function pause(): void {
+    dispatch({ type: 'setPaused', value: true })
+    Bells[state.bell + 3].pause()
+  }
+
+  function resume(): void {
+    dispatch({ type: 'setPaused', value: false })
+    if (!Bells[state.bell + 3].ended && Bells[state.bell].currentTime != 0) {
+      Bells[state.bell + 3].play()
+    }
+  }
+
+  function stop(): void {
+    dispatch({ type: 'setIsRunning', value: false })
+    Bells[state.bell + 3].pause()
+    Bells[state.bell + 3].currentTime = 0
   }
 
   return (
@@ -111,13 +162,11 @@ function MeditationTimer({}: Props) {
             </div>
           </Tab.Panel>
           <Tab.Panel>
-            <div className="flex flex-col justify-center items-center">
-              <IntervalTimer
-                state={state}
-                dispatch={dispatch}
-                getTimeString={getTimeString}
-              />
-            </div>
+            <IntervalTimer
+              state={state}
+              dispatch={dispatch}
+              getTimeString={getTimeString}
+            />
           </Tab.Panel>
         </Tab.Panels>
         <Tab.List className="flex gap-x-6 gap-y-4 flex-wrap justify-center mt-8">
@@ -130,7 +179,7 @@ function MeditationTimer({}: Props) {
                 }
               >
                 <span className="font-semibold">Delay</span>
-                <span className="-mt-1">{getTimeString(state.delay)}</span>
+                <span className="-mt-2">{getTimeString(state.delay)}</span>
               </button>
             )}
           </Tab>
@@ -143,7 +192,7 @@ function MeditationTimer({}: Props) {
                 }
               >
                 <span className="font-semibold">Meditation</span>
-                <span className="-mt-1">{getTimeString(state.duration)}</span>
+                <span className="-mt-2">{getTimeString(state.duration)}</span>
               </button>
             )}
           </Tab>
@@ -156,12 +205,31 @@ function MeditationTimer({}: Props) {
                 }
               >
                 <span className="font-semibold">Interval</span>
-                <span className="text-base -mt-0.5">None set</span>
+                <span className="text-lg -mt-2">
+                  {state.intervals.length} bell
+                  {state.intervals.length !== 1 ? 's' : ''}
+                </span>
               </button>
             )}
           </Tab>
         </Tab.List>
       </Tab.Group>
+      <div className="mt-8">
+        <BellButtons
+          state={state}
+          dispatch={dispatch}
+          playShortBell={playShortBell}
+        />
+      </div>
+      <div className="mt-12 flex justify-center">
+        <ControlButtons
+          state={state}
+          start={start}
+          pause={pause}
+          resume={resume}
+          stop={stop}
+        />
+      </div>
     </>
   )
 }
