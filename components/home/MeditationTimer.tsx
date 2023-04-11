@@ -111,6 +111,11 @@ function MeditationTimer({}: Props) {
   }
 
   function start(): void {
+    Bells.forEach((_, i) => {
+      Bells[i].play()
+      Bells[i].pause()
+      Bells[i].currentTime = 0
+    })
     dispatch({ type: 'setIsRunning', value: true })
   }
 

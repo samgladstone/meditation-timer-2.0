@@ -77,9 +77,7 @@ function MainTimer({
     mainInterval.current = setInterval(() => {
       if (timeRemainingRef.current > 0) {
         let timeElapsed = state.duration - timeRemainingRef.current
-        console.log('Time elapsed: ', timeElapsed)
         if (state.intervals.includes(timeElapsed)) {
-          console.log('Play bell')
           playShortBell(state.bell)
         }
         dispatch({
