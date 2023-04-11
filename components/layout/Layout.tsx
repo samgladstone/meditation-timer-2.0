@@ -25,6 +25,7 @@ export default function Layout({
           'min-h-[calc(100vh-4rem-4px)] lg:min-h-[calc(100vh-5rem-4px)] relative ' +
           (pathname.split('/')[1] ? pathname.split('/')[1] : 'home')
         }
+        id="main"
       >
         {children}
       </main>
