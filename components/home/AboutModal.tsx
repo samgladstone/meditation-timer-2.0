@@ -64,8 +64,8 @@ function AboutModal({ show, setShow }: Props) {
                         .
                       </p>
                       <p>
-                        If you'd like to see more free projects like this, or
-                        would like to see improvements to this site,{' '}
+                        If you&apos;d like to see more free projects like this,
+                        or would like to see improvements to this site,{' '}
                         <a
                           href="https://ko-fi.com/benbrophy"
                           target="blank"
@@ -88,7 +88,7 @@ function AboutModal({ show, setShow }: Props) {
                           target="_blank"
                           rel="noopener"
                         >
-                          "Night Sky and Clouds, Arches National Park"
+                          &quot;Night Sky and Clouds, Arches National Park&quot;
                         </a>{' '}
                         by{' '}
                         <a
