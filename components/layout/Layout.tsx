@@ -1,5 +1,5 @@
 import React from 'react'
-import HTMLHead from '../meta/Head'
+import HTMLHead from '../meta/HTMLHead'
 import Header from './Header'
 import { useRouter } from 'next/router'
 

@@ -25,7 +25,7 @@ function MeditationTimer({}: Props) {
     bell: 0,
     isRunning: false,
     paused: false,
-    selectedTab: 0
+    selectedTab: 1
   }
 
   function reducer(state: TimerState, action: TimerAction) {
