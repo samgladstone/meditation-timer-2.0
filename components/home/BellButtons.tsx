@@ -18,28 +18,31 @@ function BellButtons({ state, dispatch, playShortBell }: Props) {
       <div className="flex gap-x-6 gap-y-4 flex-wrap justify-center">
         <button
           className={
-            'btn btn-primary flex flex-col items-center leading-tight justify-center' +
+            'btn btn-primary flex flex-col items-center leading-tight justify-center disabled:opacity-75 disabled:pointer-events-none' +
             (state.bell === 0 ? ' active' : '')
           }
-          onClick={e => handleClick(0)}
+          onClick={() => handleClick(0)}
+          disabled={state.isRunning}
         >
           Bell 1
         </button>
         <button
           className={
-            'btn btn-primary flex flex-col items-center leading-tight justify-center' +
+            'btn btn-primary flex flex-col items-center leading-tight justify-center disabled:opacity-75 disabled:pointer-events-none' +
             (state.bell === 1 ? ' active' : '')
           }
-          onClick={e => handleClick(1)}
+          onClick={() => handleClick(1)}
+          disabled={state.isRunning}
         >
           Bell 2
         </button>
         <button
           className={
-            'btn btn-primary flex flex-col items-center leading-tight justify-center' +
+            'btn btn-primary flex flex-col items-center leading-tight justify-center disabled:opacity-75 disabled:pointer-events-none' +
             (state.bell === 2 ? ' active' : '')
           }
-          onClick={e => handleClick(2)}
+          onClick={() => handleClick(2)}
+          disabled={state.isRunning}
         >
           Bell 3
         </button>

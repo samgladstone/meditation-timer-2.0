@@ -1,7 +1,9 @@
 import React, { Fragment, Reducer, useReducer, useRef } from 'react'
 import { Tab } from '@headlessui/react'
 import { TimerAction, TimerState } from './types/TimerTypes'
+import MainTimer from './MainTimer'
 import IntervalTimer from './IntervalTimer'
+import DelayTimer from './DelayTimer'
 import BellButtons from './BellButtons'
 import ControlButtons from './ControlButtons'
 import { Bells } from './Bells'
@@ -9,26 +11,45 @@ import { Bells } from './Bells'
 type Props = {}
 
 function MeditationTimer({}: Props) {
-  const mainTimer = useRef(null)
-  const delayTimer = useRef(null)
-  const intervalTimer = useRef(null)
+  const mainInterval = useRef<ReturnType<typeof setInterval> | null>(null)
+  const mainTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const delayInterval = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const initialState = {
     duration: 900,
+    timeRemaining: 900,
     delay: 10,
-    interval: 300,
+    delayTimeRemaining: 10,
+    interval: 450,
     intervals: [],
     bell: 0,
     isRunning: false,
-    paused: false
+    paused: false,
+    selectedTab: 0
   }
 
   function reducer(state: TimerState, action: TimerAction) {
     switch (action.type) {
       case 'setDuration':
-        return { ...state, duration: action.value }
+        return {
+          ...state,
+          duration: action.value,
+          timeRemaining: action.value,
+          interval: Math.floor(action.value / 2)
+        }
+      case 'setTimeRemaining':
+        return { ...state, timeRemaining: action.value }
       case 'setDelay':
-        return { ...state, delay: action.value }
+        return {
+          ...state,
+          delay: action.value,
+          delayTimeRemaining: action.value
+        }
+      case 'setDelayTimeRemaining':
+        return {
+          ...state,
+          delayTimeRemaining: action.value
+        }
       case 'setInterval':
         return {
           ...state,
@@ -49,6 +70,8 @@ function MeditationTimer({}: Props) {
         return { ...state, isRunning: action.value }
       case 'setPaused':
         return { ...state, paused: action.value }
+      case 'setSelectedTab':
+        return { ...state, selectedTab: action.value }
     }
   }
 
@@ -56,14 +79,6 @@ function MeditationTimer({}: Props) {
     reducer,
     initialState
   )
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>): void {
-    dispatch({ type: 'setDuration', value: parseInt(e.target.value) })
-  }
-
-  function handleDelayChange(e: React.ChangeEvent<HTMLInputElement>): void {
-    dispatch({ type: 'setDelay', value: parseInt(e.target.value) })
-  }
 
   function getTimeString(value: number): string {
     let hours: number | string = Math.floor(value / 60 / 60)
@@ -91,8 +106,8 @@ function MeditationTimer({}: Props) {
     Bells[index].play()
   }
 
-  function playBell(index: number) {
-    Bells[index + 3].play()
+  function playBell() {
+    Bells[state.bell + 3].play()
   }
 
   function start(): void {
@@ -112,56 +127,45 @@ function MeditationTimer({}: Props) {
   }
 
   function stop(): void {
+    dispatch({ type: 'setTimeRemaining', value: state.duration })
+    dispatch({ type: 'setDelayTimeRemaining', value: state.delay })
     dispatch({ type: 'setIsRunning', value: false })
+
     Bells[state.bell + 3].pause()
     Bells[state.bell + 3].currentTime = 0
   }
 
   return (
     <>
-      <Tab.Group defaultIndex={1} manual>
+      <Tab.Group
+        selectedIndex={state.selectedTab}
+        onChange={(i: number): void =>
+          dispatch({ type: 'setSelectedTab', value: i })
+        }
+        manual
+      >
         <Tab.Panels>
-          <Tab.Panel>
-            <div className="flex flex-col justify-center items-center min-h-[10rem]">
-              <div className="text-8xl md:text-9xl">
-                {getTimeString(state.delay)}
-              </div>
-              <label htmlFor="delay" className="sr-only">
-                Set delay
-              </label>
-              <input
-                min={0}
-                max={120}
-                step={1}
-                value={state.delay}
-                type="range"
-                onChange={handleDelayChange}
-                className="accent-sky-950 dark:accent-sky-200 w-96 max-w-full mt-4"
-                id="delay"
-              />
-            </div>
+          <Tab.Panel unmount={false}>
+            <DelayTimer
+              state={state}
+              dispatch={dispatch}
+              getTimeString={getTimeString}
+              delayInterval={delayInterval}
+            />
           </Tab.Panel>
-          <Tab.Panel>
-            <div className="flex flex-col justify-center items-center min-h-[10rem]">
-              <div className="text-8xl md:text-9xl">
-                {getTimeString(state.duration)}
-              </div>
-              <label htmlFor="duration" className="sr-only">
-                Set time
-              </label>
-              <input
-                min={30}
-                max={7200}
-                step={30}
-                value={state.duration}
-                type="range"
-                onChange={handleChange}
-                className="accent-sky-950 dark:accent-sky-200 w-96 max-w-full mt-4"
-                id="duration"
-              />
-            </div>
+          <Tab.Panel unmount={false}>
+            <MainTimer
+              state={state}
+              dispatch={dispatch}
+              getTimeString={getTimeString}
+              mainInterval={mainInterval}
+              mainTimeout={mainTimeout}
+              playBell={playBell}
+              playShortBell={playShortBell}
+              stop={stop}
+            />
           </Tab.Panel>
-          <Tab.Panel>
+          <Tab.Panel unmount={false}>
             <IntervalTimer
               state={state}
               dispatch={dispatch}
@@ -179,7 +183,9 @@ function MeditationTimer({}: Props) {
                 }
               >
                 <span className="font-semibold">Delay</span>
-                <span className="-mt-2">{getTimeString(state.delay)}</span>
+                <span className="-mt-2">
+                  {getTimeString(state.delayTimeRemaining)}
+                </span>
               </button>
             )}
           </Tab>
@@ -192,7 +198,9 @@ function MeditationTimer({}: Props) {
                 }
               >
                 <span className="font-semibold">Meditation</span>
-                <span className="-mt-2">{getTimeString(state.duration)}</span>
+                <span className="-mt-2">
+                  {getTimeString(state.timeRemaining)}
+                </span>
               </button>
             )}
           </Tab>

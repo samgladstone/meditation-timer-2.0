@@ -14,14 +14,15 @@ function IntervalTimer({ state, dispatch, getTimeString }: Props) {
   }
 
   function handleAdd(): void {
-    if (!state.intervals.includes(state.interval)) {
+    if (!state.intervals.includes(state.interval) && !state.isRunning) {
       dispatch({ type: 'addInterval', value: state.interval })
     }
   }
 
   function handleDelete(index: number): void {
-    console.log('Delete item #', index)
-    dispatch({ type: 'removeInterval', value: index })
+    if (!state.isRunning) {
+      dispatch({ type: 'removeInterval', value: index })
+    }
   }
 
   return (
@@ -33,18 +34,23 @@ function IntervalTimer({ state, dispatch, getTimeString }: Props) {
         Set time
       </label>
       <input
-        min={30}
-        max={7150}
+        min={10}
+        max={state.duration - 10}
         step={5}
         value={state.interval}
         type="range"
         onChange={handleChange}
-        className="accent-sky-950 dark:accent-sky-200 w-96 max-w-full mt-4"
+        className={
+          'accent-sky-950 dark:accent-sky-200 w-96 max-w-full mt-4 transition-opacity duration-1000' +
+          (state.isRunning ? ' opacity-0' : '')
+        }
         id="duration"
+        disabled={state.isRunning}
       />
       <button
-        className="btn btn-primary !py-1 mt-4 cursor-pointer !text-base"
+        className="btn btn-primary !py-1 mt-4 cursor-pointer !text-base disabled:opacity-75 disabled:pointer-events-none"
         onClick={handleAdd}
+        disabled={state.isRunning}
       >
         <span className="transform translate-y-px inline-block">
           Add Interval
@@ -52,18 +58,19 @@ function IntervalTimer({ state, dispatch, getTimeString }: Props) {
       </button>
       <div className="mt-2 w-full">
         {state.intervals.length ? (
-          <ul className="w-36 max-w-full mx-auto flex flex-col gap-1">
+          <ul className="w-56 max-w-full mx-auto flex flex-wrap gap-2 justify-center">
             {state.intervals.map((interval, index) => {
               return (
                 <li
                   key={interval}
-                  className="text-lg flex justify-between items-center bg-gray-50 border-2 h-10 border-sky-800 rounded-lg px-2 dark:bg-gray-800 dark:border-sky-200"
+                  className="w-50 text-lg flex gap-4 justify-between items-center bg-gray-50 border-2 h-10 border-sky-800 rounded-lg px-2 dark:bg-gray-800 dark:border-sky-200"
                 >
                   <span>{getTimeString(interval)}</span>
                   <button
-                    className="hover:bg-gray-200 dark:hover:bg-gray-700 h-7 w-7 flex items-center justify-center rounded-lg py-0.5"
+                    className="hover:bg-gray-200 dark:hover:bg-gray-700 h-7 w-7 flex items-center justify-center rounded-lg py-0.5 disabled:opacity-75 disabled:pointer-events-none"
                     aria-label="delete interval"
                     onClick={() => handleDelete(index)}
+                    disabled={state.isRunning}
                   >
                     <TrashIcon className="w-4 h-4" />
                   </button>

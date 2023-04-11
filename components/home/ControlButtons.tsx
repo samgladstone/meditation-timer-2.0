@@ -3,6 +3,10 @@ import { TimerState, TimerAction } from './types/TimerTypes'
 
 type Props = {
   state: TimerState
+  start: () => void
+  pause: () => void
+  resume: () => void
+  stop: () => void
 }
 
 function ControlButtons({ state, start, pause, resume, stop }: Props) {
@@ -13,7 +17,7 @@ function ControlButtons({ state, start, pause, resume, stop }: Props) {
           className={
             'btn btn-primary flex flex-col items-center leading-tight justify-center !text-2xl w-36'
           }
-          onClick={e => start()}
+          onClick={() => start()}
         >
           Start
         </button>
@@ -25,7 +29,7 @@ function ControlButtons({ state, start, pause, resume, stop }: Props) {
               className={
                 'btn btn-primary flex flex-col items-center leading-tight justify-center !text-2xl w-36'
               }
-              onClick={e => resume()}
+              onClick={() => resume()}
             >
               Resume
             </button>
@@ -35,7 +39,7 @@ function ControlButtons({ state, start, pause, resume, stop }: Props) {
               className={
                 'btn btn-primary flex flex-col items-center leading-tight justify-center !text-2xl w-36'
               }
-              onClick={e => pause()}
+              onClick={() => pause()}
             >
               Pause
             </button>
@@ -44,7 +48,7 @@ function ControlButtons({ state, start, pause, resume, stop }: Props) {
             className={
               'btn btn-primary flex flex-col items-center leading-tight justify-center !text-2xl w-36'
             }
-            onClick={e => stop()}
+            onClick={() => stop()}
           >
             Stop
           </button>

@@ -8,6 +8,16 @@ export type Delay = {
   value: number
 }
 
+export type SetTimeRemaining = {
+  type: 'setTimeRemaining'
+  value: number
+}
+
+export type SetDelayTimeRemaining = {
+  type: 'setDelayTimeRemaining'
+  value: number
+}
+
 export type SetInterval = {
   type: 'setInterval'
   value: number
@@ -38,8 +48,14 @@ export type SetPaused = {
   value: boolean
 }
 
+export type SetSelectedTab = {
+  type: 'setSelectedTab'
+  value: number
+}
+
 export type TimerAction =
   | Duration
+  | SetTimeRemaining
   | Delay
   | SetInterval
   | AddInterval
@@ -47,13 +63,18 @@ export type TimerAction =
   | SetBell
   | SetIsRunning
   | SetPaused
+  | SetSelectedTab
+  | SetDelayTimeRemaining
 
 export type TimerState = {
   duration: number
+  timeRemaining: number
   delay: number
+  delayTimeRemaining: number
   interval: number
   intervals: Array<number>
   bell: number
   isRunning: boolean
   paused: boolean
+  selectedTab: number
 }
