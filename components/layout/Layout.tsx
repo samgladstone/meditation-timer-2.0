@@ -10,8 +10,8 @@ type LayoutProps = {
 }
 
 export default function Layout({
-  title = 'Meditation Timer',
-  description = 'A free web-based meditation timer with three bells to choose from.  Customize delay, interval, and meditation timers.  No ads, no sign-up.',
+  title = 'Free Online Meditation Timer',
+  description = 'A free web-based meditation timer with three bells to choose from. Customize delay, interval, and meditation timers. Choose light or dark mode. No ads, no sign-up.',
   children
 }: LayoutProps) {
   const { pathname } = useRouter()
