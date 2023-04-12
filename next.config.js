@@ -1,4 +1,10 @@
 /** @type {import('next').NextConfig} */
+
+const withPWA = require('next-pwa')({
+  dest: 'public'
+  // disable: process.env.NODE_ENV === 'development'
+})
+
 const ContentSecurityPolicy = `
   script-src 'self' 'unsafe-eval';
   style-src 'self' 'unsafe-inline';
@@ -36,4 +42,4 @@ const nextConfig = {
   }
 }
 
-module.exports = nextConfig
+module.exports = withPWA({ nextConfig })
