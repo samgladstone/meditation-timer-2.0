@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <Layout>
       <section className="py-8 relative z-10">
-        <div className="container">
+        <div className="container mt-6 md:mt-0">
           <MeditationTimer />
         </div>
       </section>
