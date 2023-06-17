@@ -1,12 +1,13 @@
 import React, { Fragment, Reducer, useReducer, useRef } from 'react'
 import { Tab } from '@headlessui/react'
-import { TimerAction, TimerState } from './types/TimerTypes'
+import { TimerAction, TimerState, TimerSettings } from './types/TimerTypes'
 import MainTimer from './MainTimer'
 import IntervalTimer from './IntervalTimer'
 import DelayTimer from './DelayTimer'
 import BellButtons from './BellButtons'
 import ControlButtons from './ControlButtons'
 import { Bells } from './Bells'
+import SaveSettingsButton from './SaveSettingsButton'
 
 type Props = {}
 
@@ -14,15 +15,22 @@ function MeditationTimer({}: Props) {
   const mainInterval = useRef<ReturnType<typeof setInterval> | null>(null)
   const mainTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const delayInterval = useRef<ReturnType<typeof setInterval> | null>(null)
+  let settings: undefined | TimerSettings
+
+  if (typeof window !== undefined) {
+    try {
+      settings = JSON.parse(localStorage.getItem('settings') || '{}')
+    } catch {}
+  }
 
   const initialState = {
-    duration: 900,
-    timeRemaining: 900,
-    delay: 10,
-    delayTimeRemaining: 10,
-    interval: 450,
-    intervals: [],
-    bell: 0,
+    duration: settings?.duration || 900,
+    timeRemaining: settings?.duration || 900,
+    delay: settings?.delay || 10,
+    delayTimeRemaining: settings?.delay || 10,
+    interval: settings?.interval || 450,
+    intervals: settings?.intervals || [],
+    bell: settings?.bell || 0,
     isRunning: false,
     paused: false,
     selectedTab: 1
@@ -142,6 +150,7 @@ function MeditationTimer({}: Props) {
 
   return (
     <>
+      <SaveSettingsButton state={state} />
       <Tab.Group
         selectedIndex={state.selectedTab}
         onChange={(i: number): void =>

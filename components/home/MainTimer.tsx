@@ -1,6 +1,5 @@
 import React, { Dispatch, useEffect, MutableRefObject, useRef } from 'react'
 import { TimerState, TimerAction } from './types/TimerTypes'
-import { Transition } from '@headlessui/react'
 
 type Props = {
   state: TimerState
@@ -25,6 +24,8 @@ function MainTimer({
 }: Props) {
   const timeRemainingRef = useRef<number>(state.timeRemaining)
   const delayTimeRemaining = useRef<number>(state.delayTimeRemaining)
+  const tabRef = useRef<number | null>(null)
+  tabRef.current = state.selectedTab
 
   timeRemainingRef.current = state.timeRemaining
   delayTimeRemaining.current = state.delayTimeRemaining
@@ -66,7 +67,7 @@ function MainTimer({
   function start() {
     mainTimeout.current = setTimeout(() => {
       beginCountdown()
-      if (state.selectedTab !== 1) {
+      if (tabRef.current !== 1) {
         dispatch({ type: 'setSelectedTab', value: 1 })
       }
       playBell()

@@ -78,3 +78,13 @@ export type TimerState = {
   paused: boolean
   selectedTab: number
 }
+
+export type TimerSettings = {
+  duration: number
+  timeRemaining: number
+  delay: number
+  delayTimeRemaining: number
+  interval: number
+  intervals: Array<number>
+  bell: number
+}
