@@ -1,53 +1,28 @@
-import React, { Dispatch } from 'react'
-import { TimerState, TimerAction } from './types/TimerTypes'
+import React from 'react'
 
 type Props = {
-  state: TimerState
-  dispatch: Dispatch<TimerAction>
-  playShortBell: (index: number) => void
+  disabled: boolean
+  onChange: (newValue: number) => void
+  value: number,
 }
 
-function BellButtons({ state, dispatch, playShortBell }: Props) {
-  function handleClick(index: number): void {
-    dispatch({ type: 'setBell', value: index })
-    playShortBell(index)
-  }
-
+function BellButtons({ disabled, onChange, value }: Props) {
   return (
-    <>
-      <div className="flex gap-x-6 gap-y-4 flex-wrap justify-center">
+    <div className="flex gap-x-6 gap-y-4 flex-wrap justify-center">
+      {['Bell 1', 'Bell 2', 'Bell 3'].map((label, index) => (
         <button
+          key={index}
           className={
             'btn btn-primary flex flex-col items-center leading-tight justify-center disabled:opacity-75 disabled:pointer-events-none' +
-            (state.bell === 0 ? ' active' : '')
+            (value === index ? ' active' : '')
           }
-          onClick={() => handleClick(0)}
-          disabled={state.isRunning}
+          onClick={() => onChange(index)}
+          disabled={disabled}
         >
-          Bell 1
+          {label}
         </button>
-        <button
-          className={
-            'btn btn-primary flex flex-col items-center leading-tight justify-center disabled:opacity-75 disabled:pointer-events-none' +
-            (state.bell === 1 ? ' active' : '')
-          }
-          onClick={() => handleClick(1)}
-          disabled={state.isRunning}
-        >
-          Bell 2
-        </button>
-        <button
-          className={
-            'btn btn-primary flex flex-col items-center leading-tight justify-center disabled:opacity-75 disabled:pointer-events-none' +
-            (state.bell === 2 ? ' active' : '')
-          }
-          onClick={() => handleClick(2)}
-          disabled={state.isRunning}
-        >
-          Bell 3
-        </button>
-      </div>
-    </>
+      ))}
+    </div>
   )
 }
 
