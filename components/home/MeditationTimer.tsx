@@ -1,8 +1,8 @@
-import React, { useRef, useState } from 'react'
-import { TimerLengths, TimerType } from './types/TimerTypes'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { BellTypes, TimerLengths, TimerType, ActiveTimer, MessageType, TimedEventMessage } from './types/TimerTypes'
 import BellButtons from './BellButtons'
 import ControlButton from './ControlButton'
-import { resetLongBell, playShortBell, playLongBell, pauseLongBell, resetAllBells, resumeLongBell } from './Bells'
+import { resetBell, playBell, pauseBell, resetAllBells, resumeBell } from './Bells'
 import SaveSettingsButton from './SaveSettingsButton'
 import { convertToTimeString, getSecondsNow } from './utils/timeUtils'
 import TimerControl from './TimerControl'
@@ -11,18 +11,13 @@ import TimerButton from './TimerButton'
 
 let initialSettings = loadInitialState();
 
-type ActiveTimer = {
-  delayEnd: number,
-  meditationEnd: number,
-  lengths: TimerLengths
-}
-
 type Props = {}
 
 function MeditationTimer({ }: Props) {
   const [activeTimer, setActiveTimer] = useState<ActiveTimer | undefined>(undefined);
-  const [activeTimerType, setActiveTimerType] = useState<TimerType>(TimerType.Delay);
-  const [selectedTimer, setSelectedTimer] = useState(TimerType.Meditation);
+  const [activeTimerType, setActiveTimerType] = useState<TimerType | undefined>(undefined);
+  const [shouldPlayBell, setShouldPlayBell] = useState<BellTypes | undefined>(undefined);
+  const [selectedTimerType, setSelectedTimerType] = useState(TimerType.Meditation);
   const [timeRemaining, setTimeRemaining] = useState<number>(-1);
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -33,30 +28,45 @@ function MeditationTimer({ }: Props) {
     intervals: []
   });
 
+  const timerWorker = useMemo(() => new Worker(new URL('./workers/timerWorker.ts', import.meta.url), { type: "module" }), []);
+
+  useEffect(() => {
+    // I had to do it this way as the worker would always call the bell that was selected when the onmessage is set in the below 
+    // effect. It's not ideal, but it seems to work
+    if (shouldPlayBell !== undefined)
+      playBell(selectedBell, shouldPlayBell);
+
+    setShouldPlayBell(undefined);
+  }, [shouldPlayBell]);
+
+  useEffect(() => {
+    timerWorker.onmessage = ({ data: { event } }: MessageEvent<TimedEventMessage>) => {
+      setShouldPlayBell(event === TimerType.Interval ? BellTypes.Short : BellTypes.Long);
+    };
+
+    return () => timerWorker.terminate();
+  }, [timerWorker]);
+
   const countdownInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handleBellChange = (newVal: number) => {
     setSelectedBell(newVal);
-    playShortBell(newVal);
+    playBell(newVal, BellTypes.Short);
   }
 
   const selectTimer = (type: TimerType) => {
     if (isRunning) return;
-    setSelectedTimer(type);
-  }
-
-  function playBell() {
-    playLongBell(selectedBell)
+    setSelectedTimerType(type);
   }
 
   function start(): void {
     resetAllBells();
     setIsRunning(true);
-    const nowSecs = getSecondsNow();
+    const startTime = getSecondsNow();
 
     const newTimer = {
-      delayEnd: nowSecs + timerLengths.delay,
-      meditationEnd: nowSecs + timerLengths.meditation + timerLengths.delay,
+      delayEnd: startTime + timerLengths.delay,
+      meditationEnd: startTime + timerLengths.meditation + timerLengths.delay,
       lengths: timerLengths,
     };
 
@@ -70,48 +80,50 @@ function MeditationTimer({ }: Props) {
     setTimeRemaining(-1);
     setIsPaused(false);
     setActiveTimer(undefined);
-    resetLongBell(selectedBell);
+    setActiveTimerType(undefined);
+    resetBell(selectedBell);
   }
 
   function pause(): void {
     setIsPaused(true);
     stopCountingDown();
-    pauseLongBell(selectedBell);
+    pauseBell(selectedBell);
   }
 
   function resume(): void {
     if (!activeTimer) throw new Error('This is impossible');
 
-    const nowSecs = getSecondsNow();
+    const startTime = getSecondsNow();
     const isDelay = activeTimerType === TimerType.Delay;
 
     const newTimings = {
-      delayEnd: nowSecs + (isDelay ? timeRemaining : -1),
-      meditationEnd: nowSecs + (isDelay ? timeRemaining + activeTimer.lengths.meditation : timeRemaining),
+      delayEnd: startTime + (isDelay ? timeRemaining : -1),
+      meditationEnd: startTime + (isDelay ? timeRemaining + activeTimer.lengths.meditation : timeRemaining),
       lengths: activeTimer.lengths
     };
 
     startCountingDown(newTimings);
     setIsPaused(false);
-    resumeLongBell(selectedBell);
+    resumeBell(selectedBell);
   }
 
   function stopCountingDown() {
-    if (countdownInterval.current) clearInterval(countdownInterval.current)
+    if (countdownInterval.current) clearInterval(countdownInterval.current);
+    timerWorker.postMessage({ type: MessageType.Stop });
   }
 
   function startCountingDown(timer: ActiveTimer) {
     setActiveTimer(timer);
 
+    timerWorker.postMessage({ type: MessageType.Start, timer });
     countdownInterval.current = setInterval(() => {
       const remaining = storeTimeRemaining(timer);
 
       if (remaining.timeRemaining <= 0) {
         stop()
-        playBell()
-        stopCountingDown()
       }
     }, 1000);
+
   }
 
   function storeTimeRemaining(timer: ActiveTimer) {
@@ -123,7 +135,7 @@ function MeditationTimer({ }: Props) {
       ? timer.delayEnd - nowSecs
       : timer.meditationEnd - nowSecs;
 
-    setActiveTimerType(activeTimerType);
+    setActiveTimerType(timeRemaining > 0 ? activeTimerType : undefined);
     setTimeRemaining(timeRemaining);
 
     return {
@@ -137,26 +149,29 @@ function MeditationTimer({ }: Props) {
       <SaveSettingsButton currentSettings={{ bell: selectedBell, lengths: timerLengths }} />
       <TimerControl
         isRunning={isRunning}
-        value={timerLengths}
-        selectedTimer={selectedTimer}
+        onChange={setTimerLengths}
+        selectedTimer={activeTimerType ?? selectedTimerType}
         timeRemaining={timeRemaining}
-        onChange={setTimerLengths} />
+        value={timerLengths} />
       <div className="flex gap-x-6 gap-y-4 flex-wrap justify-center mt-8">
         <TimerButton
+          disabled={isRunning}
           label="Delay"
-          selected={(activeTimerType ?? selectedTimer) === TimerType.Delay}
+          selected={(activeTimerType ?? selectedTimerType) === TimerType.Delay}
           onClick={() => selectTimer(TimerType.Delay)}>
           {convertToTimeString(activeTimerType === TimerType.Delay ? timeRemaining : timerLengths.delay)}
         </TimerButton>
         <TimerButton
+          disabled={isRunning}
           label="Meditation"
-          selected={(activeTimerType ?? selectedTimer) === TimerType.Meditation}
+          selected={(activeTimerType ?? selectedTimerType) === TimerType.Meditation}
           onClick={() => selectTimer(TimerType.Meditation)}>
           {convertToTimeString(activeTimerType === TimerType.Meditation ? timeRemaining : timerLengths.meditation)}
         </TimerButton>
         <TimerButton
+          disabled={isRunning}
           label="Interval"
-          selected={(activeTimerType ?? selectedTimer) === TimerType.Interval}
+          selected={(activeTimerType ?? selectedTimerType) === TimerType.Interval}
           onClick={() => selectTimer(TimerType.Interval)}>
           {timerLengths.intervals.length} bell
           {timerLengths.intervals.length !== 1 ? 's' : ''}

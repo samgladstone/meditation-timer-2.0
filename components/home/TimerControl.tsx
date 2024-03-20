@@ -34,13 +34,13 @@ function TimerControl({ isRunning, onChange, selectedTimer, timeRemaining, value
 
     if (selectedTimer === TimerType.Delay) {
       setTimerLength(value.delay);
-      setRange({ max: 120, min: 10, step: 5 });
+      setRange({ max: 120, min: 0, step: 1 });
       setLabel('Delay');
     }
 
     if (selectedTimer === TimerType.Interval) {
       setTimerLength(intervalLength);
-      setRange({ max: calcuateMaxInterval(), min: 0, step: 1 });
+      setRange({ max: calcuateMaxInterval(), min: 10, step: 5 });
       setLabel('Interval');
     }
   }, [selectedTimer])
@@ -76,7 +76,7 @@ function TimerControl({ isRunning, onChange, selectedTimer, timeRemaining, value
     if (!isRunning && !value.intervals.includes(timerLength))
       onChange({
         ...value,
-        intervals: [...value.intervals, timerLength].sort()
+        intervals: [...value.intervals, timerLength].sort((a, b) => a - b)
       });
   }
 
