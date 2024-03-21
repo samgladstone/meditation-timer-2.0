@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { TimerType, TimerLengths } from './types/TimerTypes'
 import { convertToTimeString } from './utils/timeUtils'
 import IntervalsControl from './IntervalsControl'
@@ -19,13 +19,14 @@ type Range = {
 
 function TimerControl({ isRunning, onChange, selectedTimer, timeRemaining, value }: Props) {
   const [timerLength, setTimerLength] = useState(value.meditation);
-
   const [intervalLength, setIntervalLength] = useState(value.meditation / 2);
-
   const [range, setRange] = useState<Range>({ max: 7200, min: 30, step: 30 });
   const [label, setLabel] = useState('Meditation');
 
-  useEffect(() => {
+  // I've opted to do it this way as I want to preserve the interval length when switched between types
+  const [lastSelectedTimer, setLastSelectedTimer] = useState(selectedTimer);
+  if (selectedTimer !== lastSelectedTimer) {
+
     if (selectedTimer === TimerType.Meditation) {
       setTimerLength(value.meditation);
       setRange({ max: 7200, min: 30, step: 30 });
@@ -40,12 +41,13 @@ function TimerControl({ isRunning, onChange, selectedTimer, timeRemaining, value
 
     if (selectedTimer === TimerType.Interval) {
       setTimerLength(intervalLength);
-      setRange({ max: calcuateMaxInterval(), min: 10, step: 5 });
+      setRange({ max: value.meditation - 5, min: 10, step: 5 });
       setLabel('Interval');
     }
-  }, [selectedTimer])
 
-  const calcuateMaxInterval = () => value.meditation - 5;
+    setLastSelectedTimer(selectedTimer);
+  }
+
 
   const handleLengthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isRunning) return;

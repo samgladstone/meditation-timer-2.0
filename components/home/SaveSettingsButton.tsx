@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { FiSave } from 'react-icons/fi'
 import { loadInitialState, areSameTimeSettings, saveCurrentSettings } from './utils/settingsSaver';
 import { TimerSettings } from './types/TimerTypes';
@@ -9,16 +9,17 @@ type Props = {
 
 function SaveSettingsButton({ currentSettings }: Props) {
   const [savedSettings, setSavedSettings] = useState(loadInitialState);
-  const [settingsMatch, setSettingsMatch] = useState(() => areSameTimeSettings(savedSettings, currentSettings));
-  const [message, setMessage] = useState(() => settingsMatch ? 'Settings Saved' : 'Save Settings');
+  const [saveFailed, setSaveFailed] = useState(false);
 
   const messageTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    const newSettingsMatch = areSameTimeSettings(savedSettings, currentSettings);
-    setMessage(newSettingsMatch ? 'Settings Saved' : 'Save Settings')
-    setSettingsMatch(newSettingsMatch);
-  }, [currentSettings])
+  const settingsMatch = useMemo(() => areSameTimeSettings(savedSettings, currentSettings), [savedSettings, currentSettings]);
+
+  const message = saveFailed
+    ? 'Unable to Save'
+    : settingsMatch
+      ? 'Settings Saved'
+      : 'Save Settings';
 
   // Clears the active timeout if the component is destoryed
   useEffect(() => () => { if (messageTimeout.current) clearTimeout(messageTimeout.current) }, []);
@@ -31,13 +32,9 @@ function SaveSettingsButton({ currentSettings }: Props) {
     try {
       saveCurrentSettings(currentSettings);
       setSavedSettings(currentSettings);
-      setMessage('Settings Saved')
     } catch {
-      setMessage('Unable to Save')
-      messageTimeout.current = setTimeout(
-        () => setMessage('Save Settings'),
-        2000
-      )
+      setSaveFailed(true);
+      messageTimeout.current = setTimeout(() => setSaveFailed(false), 2000)
     }
   }
 

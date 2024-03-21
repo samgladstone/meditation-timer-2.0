@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BellTypes, TimerLengths, TimerType, ActiveTimer, MessageType, TimedEventMessage } from './types/TimerTypes'
 import BellButtons from './BellButtons'
 import ControlButton from './ControlButton'
@@ -30,14 +30,6 @@ function MeditationTimer({ }: Props) {
 
   const timerWorker = useMemo(() => new Worker(new URL('./workers/timerWorker.ts', import.meta.url), { type: "module" }), []);
 
-  useEffect(() => {
-    // I had to do it this way as the worker would always call the bell that was selected when the onmessage is set in the below 
-    // effect. It's not ideal, but it seems to work
-    if (shouldPlayBell !== undefined)
-      playBell(selectedBell, shouldPlayBell);
-
-    setShouldPlayBell(undefined);
-  }, [shouldPlayBell]);
 
   useEffect(() => {
     timerWorker.onmessage = ({ data: { event } }: MessageEvent<TimedEventMessage>) => {
@@ -46,6 +38,13 @@ function MeditationTimer({ }: Props) {
 
     return () => timerWorker.terminate();
   }, [timerWorker]);
+
+  // I had to do it this way as the worker would always call the bell that was selected when the onmessage is set in the below 
+  // effect. It's not ideal, but it seems to work
+  if (shouldPlayBell !== undefined) {
+    playBell(selectedBell, shouldPlayBell);
+    setShouldPlayBell(undefined);
+  }
 
   const countdownInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
